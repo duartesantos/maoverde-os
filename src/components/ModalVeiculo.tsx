@@ -18,7 +18,6 @@ export function ModalVeiculo({
   const [nome, setNome] = useState('')
   const [matricula, setMatricula] = useState('')
   const [marca, setMarca] = useState('')
-  const [ativo, setAtivo] = useState(true)
 
   const [aGravar, setAGravar] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
@@ -31,12 +30,10 @@ export function ModalVeiculo({
       setNome(veiculoParaEditar.nome ?? '')
       setMatricula(veiculoParaEditar.matricula ?? '')
       setMarca(veiculoParaEditar.marca ?? '')
-      setAtivo(veiculoParaEditar.ativo ?? true)
     } else {
       setNome('')
       setMatricula('')
       setMarca('')
-      setAtivo(true)
     }
     setErro(null)
     setConfirmarDesativar(false)
@@ -60,14 +57,14 @@ export function ModalVeiculo({
           nome: nome.trim(),
           matricula: matricula.trim() || null,
           marca: marca.trim() || null,
-          ativo,
+          ativo: veiculoParaEditar.ativo ?? true,
         })
       } else {
         await criarVeiculo({
           nome: nome.trim(),
           matricula: matricula.trim() || null,
           marca: marca.trim() || null,
-          ativo,
+          ativo: true,
         })
       }
       onGuardado()
@@ -88,6 +85,24 @@ export function ModalVeiculo({
       onFechar()
     } catch (err) {
       setErro(err instanceof Error ? err.message : 'Erro ao desativar veículo.')
+      setAGravar(false)
+    }
+  }
+
+  async function handleReativar() {
+    if (!veiculoParaEditar) return
+    setAGravar(true)
+    try {
+      await atualizarVeiculo(veiculoParaEditar.id, {
+        nome: nome.trim(),
+        matricula: matricula.trim() || null,
+        marca: marca.trim() || null,
+        ativo: true,
+      })
+      onGuardado()
+      onFechar()
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : 'Erro ao reativar veículo.')
       setAGravar(false)
     }
   }
@@ -162,51 +177,49 @@ export function ModalVeiculo({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 pt-1">
-            <input
-              type="checkbox"
-              id="veiculo-ativo"
-              checked={ativo}
-              onChange={(e) => setAtivo(e.target.checked)}
-              className="h-4 w-4 rounded border-line text-ink focus:ring-0"
-            />
-            <label htmlFor="veiculo-ativo" className="text-xs font-medium text-ink cursor-pointer">
-              Veículo ativo (disponível para planeamento)
-            </label>
-          </div>
-
-          {/* Botão de desativar quando em edição */}
-          {modoEdicao && (
+          {/* Ações de desativar / reativar quando em edição */}
+          {modoEdicao && veiculoParaEditar && (
             <div className="mt-2 border-t border-line-soft pt-3">
-              {!confirmarDesativar ? (
+              {veiculoParaEditar.ativo !== false ? (
+                !confirmarDesativar ? (
+                  <button
+                    type="button"
+                    onClick={() => setConfirmarDesativar(true)}
+                    className="text-xs text-[#c53030] hover:underline transition-colors"
+                  >
+                    Desativar esta viatura
+                  </button>
+                ) : (
+                  <div className="flex items-center justify-between gap-3 rounded-lg border border-[#f5c6cb] bg-[#fdf2f2] p-2.5">
+                    <span className="text-xs font-medium text-[#c53030]">Tens a certeza que queres desativar?</span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setConfirmarDesativar(false)}
+                        className="rounded border border-line bg-surface px-2.5 py-1 text-xs text-muted hover:text-ink transition-colors"
+                      >
+                        Voltar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleDesativar}
+                        disabled={aGravar}
+                        className="rounded bg-[#c53030] px-2.5 py-1 text-xs font-medium text-white hover:opacity-90 disabled:opacity-50 transition-opacity"
+                      >
+                        Sim, desativar
+                      </button>
+                    </div>
+                  </div>
+                )
+              ) : (
                 <button
                   type="button"
-                  onClick={() => setConfirmarDesativar(true)}
-                  className="text-xs text-muted hover:text-[#c53030] underline transition-colors"
+                  onClick={handleReativar}
+                  disabled={aGravar}
+                  className="text-xs font-medium text-[#2b6cb0] hover:underline transition-colors"
                 >
-                  Desativar esta viatura
+                  ✓ Reativar esta viatura
                 </button>
-              ) : (
-                <div className="flex items-center justify-between rounded-lg border border-line bg-[#fbfbf9] p-2.5">
-                  <span className="text-xs text-[#c53030]">Tens a certeza?</span>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setConfirmarDesativar(false)}
-                      className="text-xs text-muted hover:text-ink"
-                    >
-                      Cancelar
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleDesativar}
-                      disabled={aGravar}
-                      className="rounded bg-[#c53030] px-2 py-1 text-xs font-medium text-white hover:opacity-90"
-                    >
-                      Confirmar
-                    </button>
-                  </div>
-                </div>
               )}
             </div>
           )}

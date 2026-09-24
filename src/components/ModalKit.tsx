@@ -16,7 +16,6 @@ export function ModalKit({
   kitParaEditar,
 }: ModalKitProps) {
   const [nome, setNome] = useState('')
-  const [ativo, setAtivo] = useState(true)
   const [itens, setItens] = useState<KitItemInput[]>([])
 
   const [aGravar, setAGravar] = useState(false)
@@ -29,7 +28,6 @@ export function ModalKit({
   useEffect(() => {
     if (kitParaEditar) {
       setNome(kitParaEditar.nome ?? '')
-      setAtivo(kitParaEditar.ativo ?? true)
       setItens(
         kitParaEditar.itens && kitParaEditar.itens.length > 0
           ? kitParaEditar.itens.map((it) => ({
@@ -41,7 +39,6 @@ export function ModalKit({
       )
     } else {
       setNome('')
-      setAtivo(true)
       setItens([
         { descricao_material: '', quantidade: null },
         { descricao_material: '', quantidade: null },
@@ -90,14 +87,14 @@ export function ModalKit({
           kitParaEditar.id,
           {
             nome: nome.trim(),
-            ativo,
+            ativo: kitParaEditar.ativo ?? true,
             itens: itensFiltrados,
           },
         )
       } else {
         await criarKit({
           nome: nome.trim(),
-          ativo,
+          ativo: true,
           itens: itensFiltrados,
         })
       }
@@ -132,6 +129,30 @@ export function ModalKit({
       onFechar()
     } catch (err) {
       setErro(err instanceof Error ? err.message : 'Erro ao eliminar kit.')
+      setAGravar(false)
+    }
+  }
+
+  async function handleReativar() {
+    if (!kitParaEditar) return
+    setAGravar(true)
+    const itensFiltrados = itens
+      .map((it) => ({
+        descricao_material: it.descricao_material.trim(),
+        quantidade: it.quantidade && it.quantidade > 0 ? it.quantidade : null,
+      }))
+      .filter((it) => it.descricao_material.length > 0)
+
+    try {
+      await atualizarKit(kitParaEditar.id, {
+        nome: nome.trim(),
+        ativo: true,
+        itens: itensFiltrados,
+      })
+      onGuardado()
+      onFechar()
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : 'Erro ao reativar kit.')
       setAGravar(false)
     }
   }
@@ -235,70 +256,58 @@ export function ModalKit({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 pt-1">
-            <input
-              type="checkbox"
-              id="kit-ativo"
-              checked={ativo}
-              onChange={(e) => setAtivo(e.target.checked)}
-              className="h-4 w-4 rounded border-line text-ink focus:ring-0"
-            />
-            <label htmlFor="kit-ativo" className="text-xs font-medium text-ink cursor-pointer">
-              Kit ativo no catálogo
-            </label>
-          </div>
 
-          {/* Ações destrutivas quando em edição */}
-          {modoEdicao && (
+          {/* Ações destrutivas / reativação quando em edição */}
+          {modoEdicao && kitParaEditar && (
             <div className="mt-2 flex flex-col gap-2 border-t border-line-soft pt-3">
               {/* Confirmação de Eliminar Definitivamente */}
               {confirmarEliminar ? (
-                <div className="flex items-center justify-between rounded-lg border border-[#fbd38d] bg-[#fef7ee] p-2.5">
-                  <span className="text-xs text-[#b7791f]">
-                    Eliminar kit e todas as suas ferramentas?
+                <div className="flex items-center justify-between gap-3 rounded-lg border border-[#f5c6cb] bg-[#fdf2f2] p-2.5">
+                  <span className="text-xs font-medium text-[#c53030]">
+                    Eliminar kit e todas as suas ferramentas definitivamente?
                   </span>
-                  <div className="flex gap-2">
+                  <div className="flex items-center gap-2 shrink-0">
                     <button
                       type="button"
                       onClick={() => setConfirmarEliminar(false)}
-                      className="text-xs text-muted hover:text-ink"
+                      className="rounded border border-line bg-surface px-2.5 py-1 text-xs text-muted hover:text-ink transition-colors"
                     >
-                      Cancelar
+                      Voltar
                     </button>
                     <button
                       type="button"
                       onClick={handleEliminar}
                       disabled={aGravar}
-                      className="rounded bg-[#c53030] px-2.5 py-1 text-xs font-medium text-white hover:opacity-90"
+                      className="rounded bg-[#c53030] px-2.5 py-1 text-xs font-medium text-white hover:opacity-90 disabled:opacity-50 transition-opacity"
                     >
-                      Eliminar
+                      Sim, eliminar
                     </button>
                   </div>
                 </div>
               ) : confirmarDesativar ? (
-                <div className="flex items-center justify-between rounded-lg border border-line bg-[#fbfbf9] p-2.5">
-                  <span className="text-xs text-muted">
-                    Desativar kit do catálogo?
+                <div className="flex items-center justify-between gap-3 rounded-lg border border-line bg-[#fbfbf9] p-2.5">
+                  <span className="text-xs text-ink-soft">
+                    Desativar este kit do catálogo de ferramentas?
                   </span>
-                  <div className="flex gap-2">
+                  <div className="flex items-center gap-2 shrink-0">
                     <button
                       type="button"
                       onClick={() => setConfirmarDesativar(false)}
-                      className="text-xs text-muted hover:text-ink"
+                      className="rounded border border-line bg-surface px-2.5 py-1 text-xs text-muted hover:text-ink transition-colors"
                     >
-                      Cancelar
+                      Voltar
                     </button>
                     <button
                       type="button"
                       onClick={handleDesativar}
                       disabled={aGravar}
-                      className="rounded bg-ink px-2.5 py-1 text-xs font-medium text-white hover:opacity-90"
+                      className="rounded bg-ink px-2.5 py-1 text-xs font-medium text-white hover:opacity-90 disabled:opacity-50 transition-opacity"
                     >
-                      Desativar
+                      Sim, desativar
                     </button>
                   </div>
                 </div>
-              ) : (
+              ) : kitParaEditar.ativo !== false ? (
                 <div className="flex items-center justify-between">
                   <button
                     type="button"
@@ -321,6 +330,15 @@ export function ModalKit({
                     Desativar kit
                   </button>
                 </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleReativar}
+                  disabled={aGravar}
+                  className="text-xs font-medium text-[#2b6cb0] hover:underline transition-colors text-left"
+                >
+                  ✓ Reativar este kit no catálogo
+                </button>
               )}
             </div>
           )}

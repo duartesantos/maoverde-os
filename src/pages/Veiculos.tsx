@@ -28,17 +28,30 @@ export default function Veiculos() {
     setRefreshKey((k) => k + 1)
   }
 
+  const [mostrarInativos, setMostrarInativos] = useState(false)
+
   // Estatísticas
   const veiculos = data?.veiculos ?? []
   const kits = data?.kits ?? []
 
   const veiculosAtivos = useMemo(() => veiculos.filter((v) => v.ativo !== false), [veiculos])
+  const veiculosInativos = useMemo(() => veiculos.filter((v) => v.ativo === false), [veiculos])
+  const veiculosExibidos = useMemo(
+    () => (mostrarInativos ? veiculos : veiculosAtivos),
+    [mostrarInativos, veiculos, veiculosAtivos],
+  )
+
   const kitsAtivos = useMemo(() => kits.filter((k) => k.ativo !== false), [kits])
+  const kitsInativos = useMemo(() => kits.filter((k) => k.ativo === false), [kits])
+  const kitsBase = useMemo(
+    () => (mostrarInativos ? kits : kitsAtivos),
+    [mostrarInativos, kits, kitsAtivos],
+  )
 
   // Filtragem de Kits por texto (nome do kit ou ferramenta)
   const kitsFiltrados = useMemo(() => {
     const termo = pesquisa.trim().toLowerCase()
-    return kitsAtivos.filter((k) => {
+    return kitsBase.filter((k) => {
       if (termo) {
         const nomeMatch = k.nome.toLowerCase().includes(termo)
         const itemMatch = (k.itens ?? []).some((it) =>
@@ -48,7 +61,7 @@ export default function Veiculos() {
       }
       return true
     })
-  }, [kitsAtivos, pesquisa])
+  }, [kitsBase, pesquisa])
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6 p-4 sm:p-6 lg:p-8">
@@ -88,37 +101,54 @@ export default function Veiculos() {
       </div>
 
       {/* Navegação por Abas */}
-      <div className="flex items-center gap-2 border-b border-line pb-px">
-        <button
-          type="button"
-          onClick={() => setAbaAtiva('veiculos')}
-          className={
-            'relative pb-3 text-sm font-medium transition-colors ' +
-            (abaAtiva === 'veiculos'
-              ? 'text-ink font-semibold'
-              : 'text-muted hover:text-ink')
-          }
-        >
-          Carrinhas & Frotas ({veiculosAtivos.length})
-          {abaAtiva === 'veiculos' && (
-            <span className="absolute inset-x-0 bottom-0 h-0.5 bg-ink" />
-          )}
-        </button>
-        <button
-          type="button"
-          onClick={() => setAbaAtiva('kits')}
-          className={
-            'relative pb-3 text-sm font-medium transition-colors ml-4 ' +
-            (abaAtiva === 'kits'
-              ? 'text-ink font-semibold'
-              : 'text-muted hover:text-ink')
-          }
-        >
-          Catálogo de Kits & Ferramentas ({kitsAtivos.length})
-          {abaAtiva === 'kits' && (
-            <span className="absolute inset-x-0 bottom-0 h-0.5 bg-ink" />
-          )}
-        </button>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-px">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setAbaAtiva('veiculos')}
+            className={
+              'relative pb-3 text-sm font-medium transition-colors ' +
+              (abaAtiva === 'veiculos'
+                ? 'text-ink font-semibold'
+                : 'text-muted hover:text-ink')
+            }
+          >
+            Carrinhas & Frotas ({veiculosAtivos.length})
+            {abaAtiva === 'veiculos' && (
+              <span className="absolute inset-x-0 bottom-0 h-0.5 bg-ink" />
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => setAbaAtiva('kits')}
+            className={
+              'relative pb-3 text-sm font-medium transition-colors ml-4 ' +
+              (abaAtiva === 'kits'
+                ? 'text-ink font-semibold'
+                : 'text-muted hover:text-ink')
+            }
+          >
+            Catálogo de Kits & Ferramentas ({kitsAtivos.length})
+            {abaAtiva === 'kits' && (
+              <span className="absolute inset-x-0 bottom-0 h-0.5 bg-ink" />
+            )}
+          </button>
+        </div>
+
+        {((abaAtiva === 'veiculos' && veiculosInativos.length > 0) ||
+          (abaAtiva === 'kits' && kitsInativos.length > 0)) && (
+          <label className="flex items-center gap-1.5 pb-2 text-xs text-muted hover:text-ink cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={mostrarInativos}
+              onChange={(e) => setMostrarInativos(e.target.checked)}
+              className="h-3.5 w-3.5 rounded border-line text-ink focus:ring-0"
+            />
+            <span>
+              Mostrar inativos ({abaAtiva === 'veiculos' ? veiculosInativos.length : kitsInativos.length})
+            </span>
+          </label>
+        )}
       </div>
 
       <PageState loading={loading} error={error}>
@@ -144,7 +174,7 @@ export default function Veiculos() {
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {veiculosAtivos.map((v) => {
+                {veiculosExibidos.map((v) => {
                   const totalItens = v.kits.reduce(
                     (acc, kit) => acc + (kit.itens?.length ?? 0),
                     0,
@@ -153,7 +183,10 @@ export default function Veiculos() {
                   return (
                     <div
                       key={v.id}
-                      className="flex flex-col justify-between rounded-xl border border-line bg-surface p-5 shadow-xs transition-shadow hover:shadow-sm"
+                      className={
+                        'flex flex-col justify-between rounded-xl border border-line bg-surface p-5 shadow-xs transition-shadow hover:shadow-sm ' +
+                        (v.ativo === false ? 'opacity-70 bg-page/30' : '')
+                      }
                     >
                       <div>
                         {/* Topo do Cartão */}
@@ -163,7 +196,13 @@ export default function Veiculos() {
                               <h2 className="truncate text-base font-semibold text-ink">
                                 {v.nome}
                               </h2>
-                              <span className="inline-block h-2 w-2 shrink-0 rounded-full bg-[#38a169]" title="Ativa" />
+                              {v.ativo !== false ? (
+                                <span className="inline-block h-2 w-2 shrink-0 rounded-full bg-[#38a169]" title="Ativa" />
+                              ) : (
+                                <span className="rounded bg-page px-1.5 py-0.2 font-mono text-[10.5px] font-medium text-muted border border-line-soft">
+                                  Inativa
+                                </span>
+                              )}
                             </div>
 
                             <div className="mt-1 flex flex-wrap items-center gap-2">
@@ -309,12 +348,25 @@ export default function Veiculos() {
             ) : (
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {kitsFiltrados.map((k) => (
-                  <Card key={k.id} className="p-4 sm:p-5 flex flex-col justify-between">
+                  <Card
+                    key={k.id}
+                    className={
+                      'p-4 sm:p-5 flex flex-col justify-between ' +
+                      (k.ativo === false ? 'opacity-70 bg-page/30' : '')
+                    }
+                  >
                     <div>
                       {/* Topo do Kit */}
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
-                          <h2 className="text-base font-semibold text-ink">{k.nome}</h2>
+                          <div className="flex items-center gap-2">
+                            <h2 className="text-base font-semibold text-ink">{k.nome}</h2>
+                            {k.ativo === false && (
+                              <span className="rounded bg-page px-1.5 py-0.2 font-mono text-[10.5px] font-medium text-muted border border-line-soft">
+                                Inativo
+                              </span>
+                            )}
+                          </div>
                         </div>
 
                         <button
