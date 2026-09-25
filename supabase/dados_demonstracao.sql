@@ -113,15 +113,15 @@ insert into manutencao_material_extra (manutencao_id, descricao_material, quanti
 
 -- Registo da Execução e Materiais a Faturar (para demonstrar o contador "Por faturar" no Dashboard)
 insert into execucao (id, manutencao_id, concluido_por, observacoes, concluido_em) values
-  ('x1000001-0000-0000-0000-000000000001',
+  ('c1000001-0000-0000-0000-000000000001',
    'd1000001-0000-0000-0000-000000000001',
    '00edded7-4bbe-452d-842a-01120b7e0b09', -- Hélio
    'Corte de relva concluído na altura 4. Bordaduras alinhadas. Foram espalhados 2 sacos de adubo azul nos canteiros da frente e canteiro poente.',
    now() - interval '2 hours');
 
 insert into item_faturavel (execucao_id, descricao, quantidade, faturado) values
-  ('x1000001-0000-0000-0000-000000000001', 'Adubo granulado azul 50L', '2 sacos', false),
-  ('x1000001-0000-0000-0000-000000000001', 'Fio de roçadora reforçado', '1 rolo', false);
+  ('c1000001-0000-0000-0000-000000000001', 'Adubo granulado azul 50L', '2 sacos', false),
+  ('c1000001-0000-0000-0000-000000000001', 'Fio de roçadora reforçado', '1 rolo', false);
 
 -- Manutenção 2: Agendada para hoje (segundo trabalho da Berlingo)
 insert into manutencao (id, jardim_id, veiculo_id, data, status, observacoes_planeamento) values
@@ -207,14 +207,14 @@ insert into manutencao_colaborador (manutencao_id, colaborador_id) values
   ('d1000007-0000-0000-0000-000000000007', '00edded7-4bbe-452d-842a-01120b7e0b09');
 
 insert into execucao (id, manutencao_id, concluido_por, observacoes, concluido_em) values
-  ('x1000002-0000-0000-0000-000000000002',
+  ('c1000002-0000-0000-0000-000000000002',
    'd1000007-0000-0000-0000-000000000007',
    '00edded7-4bbe-452d-842a-01120b7e0b09',
    'Corte de relva e limpeza de calçada. Substituído 1 aspersor danificado.',
    now() - interval '1 day');
 
 insert into item_faturavel (execucao_id, descricao, quantidade, faturado, faturado_em) values
-  ('x1000002-0000-0000-0000-000000000002', 'Aspersor pop-up 1804 Rain Bird', '1 un', true, current_date);
+  ('c1000002-0000-0000-0000-000000000002', 'Aspersor pop-up 1804 Rain Bird', '1 un', true, current_date);
 
 
 -- 6. AGENDA DE AMANHÃ (CURRENT_DATE + 1)
