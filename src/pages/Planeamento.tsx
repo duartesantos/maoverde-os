@@ -1245,6 +1245,7 @@ function ModalEditarManutencao({
               {manutencao.jardim_id && (
                 <AvisoObservacoesAnteriores
                   jardimId={manutencao.jardim_id}
+                  ignorarManutencaoId={manutencao.id}
                   onCopiarParaObs={(texto) => {
                     setObs((prev) => (prev.trim() ? `${prev}\n\n[Nota anterior]: ${texto}` : texto))
                   }}

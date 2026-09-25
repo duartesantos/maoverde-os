@@ -878,9 +878,10 @@ export interface ObservacaoAnterior {
 export async function getUltimasObservacoesJardim(
   jardimId: string,
   limit: number = 2,
+  ignorarManutencaoId?: string,
 ): Promise<ObservacaoAnterior[]> {
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('manutencao')
       .select(`
         id,
@@ -895,12 +896,18 @@ export async function getUltimasObservacoesJardim(
         )
       `)
       .eq('jardim_id', jardimId)
+
+    if (ignorarManutencaoId) {
+      query = query.neq('id', ignorarManutencaoId)
+    }
+
+    const { data, error } = await query
       .order('data', { ascending: false })
       .limit(8)
 
     if (error) {
       // Fallback sem relação explícita com colaborador
-      const { data: fbData, error: fbError } = await supabase
+      let fbQuery = supabase
         .from('manutencao')
         .select(`
           id,
@@ -914,6 +921,12 @@ export async function getUltimasObservacoesJardim(
           )
         `)
         .eq('jardim_id', jardimId)
+
+      if (ignorarManutencaoId) {
+        fbQuery = fbQuery.neq('id', ignorarManutencaoId)
+      }
+
+      const { data: fbData, error: fbError } = await fbQuery
         .order('data', { ascending: false })
         .limit(8)
 

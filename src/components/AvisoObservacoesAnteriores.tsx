@@ -5,11 +5,13 @@ import { dataCurta } from '../lib/format'
 interface AvisoObservacoesAnterioresProps {
   jardimId: string | null
   onCopiarParaObs: (texto: string) => void
+  ignorarManutencaoId?: string
 }
 
 export function AvisoObservacoesAnteriores({
   jardimId,
   onCopiarParaObs,
+  ignorarManutencaoId,
 }: AvisoObservacoesAnterioresProps) {
   const [notas, setNotas] = useState<ObservacaoAnterior[]>([])
   const [loading, setLoading] = useState(false)
@@ -26,7 +28,7 @@ export function AvisoObservacoesAnteriores({
     let ativo = true
     setLoading(true)
 
-    getUltimasObservacoesJardim(jardimId, 2)
+    getUltimasObservacoesJardim(jardimId, 2, ignorarManutencaoId)
       .then((res) => {
         if (ativo) {
           setNotas(res)
@@ -40,7 +42,7 @@ export function AvisoObservacoesAnteriores({
     return () => {
       ativo = false
     }
-  }, [jardimId])
+  }, [jardimId, ignorarManutencaoId])
 
   if (loading || !jardimId || notas.length === 0) {
     return null
