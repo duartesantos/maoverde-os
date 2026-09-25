@@ -1183,6 +1183,7 @@ function ModalEditarManutencao({
   const morada = [manutencao.jardim?.morada_rua, manutencao.jardim?.morada_cidade]
     .filter(Boolean)
     .join(' · ')
+  const nomeVolta = manutencao.jardim?.volta?.nome?.trim()
 
   return (
     <div className="fixed inset-0 z-20 flex items-center justify-center bg-black/40 p-4">
@@ -1191,10 +1192,18 @@ function ModalEditarManutencao({
         <div className="border-b border-line px-5 py-4">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted">
-                Editar Manutenção
-              </span>
-              <h2 className="text-base font-semibold leading-tight">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+                  Editar Manutenção
+                </span>
+                {nomeVolta && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-line bg-page px-2 py-0.5 text-[10.5px] font-medium text-ink">
+                    <span className="text-muted text-[10px]">📍</span>
+                    <span>{nomeVolta}</span>
+                  </span>
+                )}
+              </div>
+              <h2 className="text-base font-semibold leading-tight mt-1">
                 {manutencao.jardim?.cliente?.nome ?? 'Jardim'}
               </h2>
               {morada && <p className="mt-0.5 text-[12px] text-muted">{morada}</p>}
