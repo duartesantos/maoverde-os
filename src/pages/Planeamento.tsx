@@ -293,37 +293,39 @@ export default function Planeamento() {
   }
 
   return (
-    <div className="flex h-full flex-col p-4 lg:p-5">
+    <div className="flex flex-col p-3.5 sm:p-4 lg:h-full lg:p-5">
       {/* Barra de topo */}
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 min-w-0">
           <button
             onClick={() => setSemana(addDias(semana, -7))}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-surface text-ink-soft hover:bg-[#f9f9f8]"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-line bg-surface text-ink-soft hover:bg-[#f9f9f8]"
             title="Semana anterior"
           >
             ‹
           </button>
-          <b className="text-[15px] font-semibold">{labelSemana(semana)}</b>
+          <b className="text-[13.5px] sm:text-[15px] font-semibold truncate">{labelSemana(semana)}</b>
           <button
             onClick={() => setSemana(addDias(semana, 7))}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-surface text-ink-soft hover:bg-[#f9f9f8]"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-line bg-surface text-ink-soft hover:bg-[#f9f9f8]"
             title="Semana seguinte"
           >
             ›
           </button>
           <button
             onClick={() => setSemana(inicioSemana(new Date()))}
-            className="ml-1 h-8 rounded-lg border border-line bg-surface px-3 text-[12.5px] text-ink-soft hover:bg-[#f9f9f8]"
+            className="h-8 shrink-0 rounded-lg border border-line bg-surface px-2.5 text-[12px] text-ink-soft hover:bg-[#f9f9f8]"
           >
             Hoje
           </button>
         </div>
         <button
           onClick={() => setModalNovo(true)}
-          className="h-9 rounded-lg bg-ink px-3.5 text-[12.5px] font-medium text-white hover:bg-ink-soft"
+          className="flex h-8 shrink-0 items-center gap-1.5 rounded-lg bg-ink px-3 text-[12px] font-medium text-white hover:bg-ink-soft"
         >
-          + Nova manutenção
+          <span>+</span>
+          <span className="hidden sm:inline">Nova manutenção</span>
+          <span className="sm:hidden font-medium">Nova</span>
         </button>
       </div>
 
@@ -441,8 +443,8 @@ export default function Planeamento() {
         </div>
 
         {/* Vista por dia — telemóvel */}
-        <div className="flex min-h-0 flex-1 flex-col lg:hidden">
-          <div className="mb-3 flex gap-1.5">
+        <div className="flex flex-col lg:hidden">
+          <div className="mb-3 flex gap-1 sm:gap-1.5">
             {dias.map((d, i) => {
               const iso = isoLocal(d)
               const ativo = i === diaSelIdx
@@ -452,17 +454,17 @@ export default function Planeamento() {
                   key={iso}
                   onClick={() => setDiaSelIdx(i)}
                   className={
-                    'flex-1 rounded-lg border py-2 text-center ' +
+                    'flex-1 rounded-lg border py-1.5 sm:py-2 text-center ' +
                     (ativo ? 'border-ink bg-ink text-white' : 'border-line bg-surface')
                   }
                 >
                   <span className={'block text-[10px] ' + (ativo ? 'text-[#9a9a92]' : 'text-faint')}>
                     {DIAS_SEMANA[i]}
                   </span>
-                  <b className="block text-[15px] font-semibold">{d.getDate()}</b>
+                  <b className="block text-[14px] sm:text-[15px] font-semibold">{d.getDate()}</b>
                   <span
                     className={
-                      'mx-auto mt-1 block h-1 w-1 rounded-full ' +
+                      'mx-auto mt-0.5 block h-1 w-1 rounded-full ' +
                       (n > 0 ? (ativo ? 'bg-[#9a9a92]' : 'bg-[#c4c4bd]') : 'bg-transparent')
                     }
                   />
@@ -470,7 +472,8 @@ export default function Planeamento() {
               )
             })}
           </div>
-          <div className="flex flex-col gap-3 overflow-auto pb-4">
+          {/* Lista de manutenções da carrinha — fluxo contínuo sem zona morta */}
+          <div className="flex flex-col gap-2.5 sm:gap-3">
             {agruparPorVeiculo(porDia.get(isoLocal(dias[diaSelIdx])) ?? []).map((grupo) => (
               <div
                 key={grupo.chave}

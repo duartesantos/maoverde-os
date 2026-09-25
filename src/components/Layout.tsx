@@ -154,7 +154,7 @@ export default function Layout() {
       </div>
 
       {/* Separadores — telemóvel */}
-      <nav className="fixed inset-x-0 bottom-0 z-10 flex border-t border-line bg-surface pb-3 pt-2 lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-10 flex border-t border-line bg-surface pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden">
         {MOBILE_NAV.map((n) => (
           <NavLink
             key={n.to}
