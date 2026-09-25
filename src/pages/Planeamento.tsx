@@ -40,6 +40,12 @@ function equipaNomes(m: ManutencaoSemana): string {
   return m.equipa.map((e) => e.colaborador?.nome).filter(Boolean).join(', ') || '—'
 }
 
+interface SubgrupoVolta {
+  chave: string
+  voltaNome: string
+  itens: ManutencaoSemana[]
+}
+
 interface GrupoVeiculoManutencao {
   chave: string
   veiculoId: string | null
@@ -47,6 +53,7 @@ interface GrupoVeiculoManutencao {
   temVeiculo: boolean
   equipaTexto: string
   itens: ManutencaoSemana[]
+  subgruposVolta: SubgrupoVolta[]
 }
 
 function agruparPorVeiculo(lista: ManutencaoSemana[]): GrupoVeiculoManutencao[] {
@@ -65,6 +72,7 @@ function agruparPorVeiculo(lista: ManutencaoSemana[]): GrupoVeiculoManutencao[] 
         temVeiculo,
         equipaTexto: '',
         itens: [],
+        subgruposVolta: [],
       }
       map.set(vId, g)
       grupos.push(g)
@@ -82,6 +90,24 @@ function agruparPorVeiculo(lista: ManutencaoSemana[]): GrupoVeiculoManutencao[] 
       }
     }
     g.equipaTexto = Array.from(nomesEquipa).join(', ')
+
+    // Agrupar e ordenar itens da carrinha por Volta
+    const voltasMap = new Map<string, SubgrupoVolta>()
+    for (const m of g.itens) {
+      const voltaKey = m.jardim?.volta?.id ?? '__sem_volta__'
+      const voltaNome = m.jardim?.volta?.nome?.trim() || 'Sem volta definida'
+      let sg = voltasMap.get(voltaKey)
+      if (!sg) {
+        sg = {
+          chave: voltaKey,
+          voltaNome,
+          itens: [],
+        }
+        voltasMap.set(voltaKey, sg)
+      }
+      sg.itens.push(m)
+    }
+    g.subgruposVolta = Array.from(voltasMap.values())
   }
 
   return grupos
@@ -106,6 +132,7 @@ function Cartao({
   // Só mostra a equipa no cartão se for diferente da equipa indicada no cabeçalho do grupo
   const mostrarEquipaNoCard = equipaCard !== '—' && equipaCard !== equipaGrupo
   const isConcluida = m.status === 'concluida'
+  const nomeVolta = m.jardim?.volta?.nome?.trim()
 
   return (
     <div
@@ -127,8 +154,32 @@ function Cartao({
       }
     >
       <div className="flex items-start justify-between gap-1">
-        <div className="text-[11.5px] font-medium leading-tight text-ink">
-          {m.jardim?.cliente?.nome ?? 'Jardim'}
+        <div className="min-w-0 flex-1">
+          <div className="text-[11.5px] font-medium leading-tight text-ink truncate">
+            {m.jardim?.cliente?.nome ?? 'Jardim'}
+          </div>
+          {/* Indicação da Volta no lugar da morada */}
+          {nomeVolta && (
+            <div className="mt-1 flex items-center">
+              <span
+                className={
+                  'inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[9.5px] font-medium border truncate max-w-full ' +
+                  (isConcluida
+                    ? 'bg-[#e2ede4] text-[#2f5e37] border-[#bad6bf]'
+                    : 'bg-[#f4f4f1] text-[#4a4a45] border-line/60')
+                }
+                title={`Volta: ${nomeVolta}`}
+              >
+                <span
+                  className={
+                    'h-1.5 w-1.5 rounded-full shrink-0 ' +
+                    (isConcluida ? 'bg-[#3c6b44]' : 'bg-[#7a7a72]')
+                  }
+                />
+                <span className="truncate">{nomeVolta}</span>
+              </span>
+            </div>
+          )}
         </div>
         {isConcluida && (
           <span
@@ -139,11 +190,7 @@ function Cartao({
           </span>
         )}
       </div>
-      {m.jardim?.morada_rua && (
-        <div className="mt-0.5 truncate text-[10px] text-muted">
-          {m.jardim.morada_rua}
-        </div>
-      )}
+
       {mostrarEquipaNoCard && (
         <div className="mt-1 flex items-center gap-1 text-[9.5px] text-muted truncate">
           <span>👥</span>
@@ -229,7 +276,17 @@ export default function Planeamento() {
           if (compVeiculo !== 0) return compVeiculo
         }
 
-        // 2. No mesmo veículo (ou sem veículo), ordena por nome do cliente/jardim
+        // 2. Agrupamento por Volta dentro da carrinha
+        const voltA = a.jardim?.volta?.nome?.trim() ?? ''
+        const voltB = b.jardim?.volta?.nome?.trim() ?? ''
+        if (voltA && !voltB) return -1
+        if (!voltA && voltB) return 1
+        if (voltA && voltB) {
+          const compVolta = voltA.localeCompare(voltB, 'pt', { sensitivity: 'base' })
+          if (compVolta !== 0) return compVolta
+        }
+
+        // 3. Dentro da mesma volta, ordena por nome do cliente/jardim
         const cliA = a.jardim?.cliente?.nome?.trim() ?? ''
         const cliB = b.jardim?.cliente?.nome?.trim() ?? ''
         return cliA.localeCompare(cliB, 'pt', { sensitivity: 'base' })
@@ -364,25 +421,35 @@ export default function Planeamento() {
                         </span>
                       </div>
 
-                      {/* Lista de manutenções dentro da caixa da carrinha */}
-                      <div className="flex flex-col gap-1.5">
-                        {grupo.itens.map((m) => (
-                          <Cartao
-                            key={m.id}
-                            m={m}
-                            equipaGrupo={grupo.equipaTexto}
-                            onClick={() => setManutencaoAEditar(m)}
-                            isDragging={arrastandoId === m.id}
-                            onDragStart={(e) => {
-                              e.dataTransfer.setData('text/plain', m.id)
-                              e.dataTransfer.effectAllowed = 'move'
-                              setArrastandoId(m.id)
-                            }}
-                            onDragEnd={() => {
-                              setArrastandoId(null)
-                              setDragOverDia(null)
-                            }}
-                          />
+                      {/* Lista de manutenções dentro da caixa da carrinha (organizada por volta) */}
+                      <div className="flex flex-col gap-2">
+                        {grupo.subgruposVolta.map((sub) => (
+                          <div key={sub.chave} className="flex flex-col gap-1.5">
+                            {grupo.subgruposVolta.length > 1 && (
+                              <div className="flex items-center justify-between px-0.5 pt-0.5 text-[9.5px] font-semibold text-muted">
+                                <span className="uppercase tracking-wider truncate">📍 {sub.voltaNome}</span>
+                                <span className="font-mono text-[9px] text-faint shrink-0">({sub.itens.length})</span>
+                              </div>
+                            )}
+                            {sub.itens.map((m) => (
+                              <Cartao
+                                key={m.id}
+                                m={m}
+                                equipaGrupo={grupo.equipaTexto}
+                                onClick={() => setManutencaoAEditar(m)}
+                                isDragging={arrastandoId === m.id}
+                                onDragStart={(e) => {
+                                  e.dataTransfer.setData('text/plain', m.id)
+                                  e.dataTransfer.effectAllowed = 'move'
+                                  setArrastandoId(m.id)
+                                }}
+                                onDragEnd={() => {
+                                  setArrastandoId(null)
+                                  setDragOverDia(null)
+                                }}
+                              />
+                            ))}
+                          </div>
                         ))}
                       </div>
                     </div>
@@ -450,14 +517,25 @@ export default function Planeamento() {
                     {grupo.itens.length} {grupo.itens.length === 1 ? 'jardim' : 'jardins'}
                   </span>
                 </div>
-                <div className="flex flex-col gap-1.5">
-                  {grupo.itens.map((m) => (
-                    <Cartao
-                      key={m.id}
-                      m={m}
-                      equipaGrupo={grupo.equipaTexto}
-                      onClick={() => setManutencaoAEditar(m)}
-                    />
+                {/* Lista de manutenções da carrinha (organizada por volta) */}
+                <div className="flex flex-col gap-2.5">
+                  {grupo.subgruposVolta.map((sub) => (
+                    <div key={sub.chave} className="flex flex-col gap-1.5">
+                      {grupo.subgruposVolta.length > 1 && (
+                        <div className="flex items-center justify-between px-0.5 pt-0.5 text-[10.5px] font-semibold text-muted">
+                          <span className="uppercase tracking-wider truncate">📍 {sub.voltaNome}</span>
+                          <span className="font-mono text-[10px] text-faint shrink-0">({sub.itens.length})</span>
+                        </div>
+                      )}
+                      {sub.itens.map((m) => (
+                        <Cartao
+                          key={m.id}
+                          m={m}
+                          equipaGrupo={grupo.equipaTexto}
+                          onClick={() => setManutencaoAEditar(m)}
+                        />
+                      ))}
+                    </div>
                   ))}
                 </div>
               </div>

@@ -335,6 +335,7 @@ export interface ManutencaoSemana {
     morada_rua: string | null
     morada_cidade: string | null
     cliente: { nome: string } | null
+    volta: { id: string; nome: string } | null
   } | null
   veiculo: { id: string; nome: string } | null
   equipa: { colaborador_id: string; colaborador: { id: string; nome: string } | null }[]
@@ -349,7 +350,7 @@ export async function getManutencoes(
   const { data, error } = await supabase
     .from('manutencao')
     .select(
-      '*, jardim:jardim(id, morada_rua, morada_cidade, cliente:cliente(nome)), veiculo:veiculo(id, nome), equipa:manutencao_colaborador(colaborador_id, colaborador:colaborador(id, nome)), materiais_extra:manutencao_material_extra(id, manutencao_id, descricao_material, quantidade)',
+      '*, jardim:jardim(id, morada_rua, morada_cidade, cliente:cliente(nome), volta:volta(id, nome)), veiculo:veiculo(id, nome), equipa:manutencao_colaborador(colaborador_id, colaborador:colaborador(id, nome)), materiais_extra:manutencao_material_extra(id, manutencao_id, descricao_material, quantidade)',
     )
     .gte('data', inicioISO)
     .lte('data', fimISO)
