@@ -42,6 +42,7 @@ export function ModalAtribuirKitsVeiculo({
 
   async function submeter(e: FormEvent) {
     e.preventDefault()
+    if (!veiculo) return
     setErro(null)
     setAGravar(true)
 
