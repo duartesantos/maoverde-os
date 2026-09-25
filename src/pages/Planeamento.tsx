@@ -119,7 +119,6 @@ function Cartao({
   onDragEnd,
   isDragging,
   equipaGrupo,
-  mostrarVoltaNoCard,
 }: {
   m: ManutencaoSemana
   onClick: () => void
@@ -127,13 +126,11 @@ function Cartao({
   onDragEnd?: () => void
   isDragging?: boolean
   equipaGrupo?: string
-  mostrarVoltaNoCard?: boolean
 }) {
   const equipaCard = equipaNomes(m)
   // Só mostra a equipa no cartão se for diferente da equipa indicada no cabeçalho do grupo
   const mostrarEquipaNoCard = equipaCard !== '—' && equipaCard !== equipaGrupo
   const isConcluida = m.status === 'concluida'
-  const nomeVolta = m.jardim?.volta?.nome?.trim()
 
   return (
     <div
@@ -159,28 +156,6 @@ function Cartao({
           <div className="text-[11.5px] font-medium leading-tight text-ink truncate">
             {m.jardim?.cliente?.nome ?? 'Jardim'}
           </div>
-          {/* Indicação da Volta no card apenas se a carrinha visitar múltiplas voltas */}
-          {mostrarVoltaNoCard && nomeVolta && (
-            <div className="mt-1 flex items-center">
-              <span
-                className={
-                  'inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[9.5px] font-medium border truncate max-w-full ' +
-                  (isConcluida
-                    ? 'bg-[#e2ede4] text-[#2f5e37] border-[#bad6bf]'
-                    : 'bg-[#f4f4f1] text-[#4a4a45] border-line/60')
-                }
-                title={`Volta: ${nomeVolta}`}
-              >
-                <span
-                  className={
-                    'h-1.5 w-1.5 rounded-full shrink-0 ' +
-                    (isConcluida ? 'bg-[#3c6b44]' : 'bg-[#7a7a72]')
-                  }
-                />
-                <span className="truncate">{nomeVolta}</span>
-              </span>
-            </div>
-          )}
         </div>
         {isConcluida && (
           <span
@@ -438,7 +413,6 @@ export default function Planeamento() {
                             key={m.id}
                             m={m}
                             equipaGrupo={grupo.equipaTexto}
-                            mostrarVoltaNoCard={grupo.voltasNomes.length > 1}
                             onClick={() => setManutencaoAEditar(m)}
                             isDragging={arrastandoId === m.id}
                             onDragStart={(e) => {
@@ -534,7 +508,6 @@ export default function Planeamento() {
                       key={m.id}
                       m={m}
                       equipaGrupo={grupo.equipaTexto}
-                      mostrarVoltaNoCard={grupo.voltasNomes.length > 1}
                       onClick={() => setManutencaoAEditar(m)}
                     />
                   ))}
