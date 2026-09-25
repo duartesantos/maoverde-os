@@ -111,6 +111,7 @@ Mockups (Claude Artifact): https://claude.ai/code/artifact/32ecf1c9-970c-4d89-a8
 - **Sem campo `premium`** no cliente (removido).
 - **Sem estado 'cancelada' no planeamento** — se o serviço não se realiza ou se foi marcado por engano, ou se remarca para outro dia ou se elimina. O calendário deve manter-se sempre limpo e focado no que é executável.
 - **Sem distinção de estado 'reagendada'** — manutenções remarcadas ou arrastadas no calendário mantêm simplesmente o estado 'agendada'. Não existe etiqueta nem opção 'reagendada' na interface.
+- **Sem estado 'em progresso' / 'em curso'** — o fluxo operacional no terreno e no planeamento é binário e direto: os trabalhos dividem-se simplesmente entre 'agendada' (por realizar) e 'concluida' (trabalho efetuado com registo de execução).
 - **Sem obrigatoriedade de cron jobs externos** — o recálculo do status é resiliente: dispara nos triggers de conclusão e ao abrir o Dashboard na aplicação.
 - **Kits nomeados/reutilizáveis** (kit/kit_item/veiculo_kit), não presos à carrinha.
 - **Observações** (texto/histórico) **separadas** dos **materiais a faturar** (tabela própria `item_faturavel`).

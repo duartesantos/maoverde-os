@@ -14,7 +14,7 @@
 --  - Limpa manutenções antigas de teste (mantendo clientes, jardins e carrinhas reais).
 --  - Atribui moradas e notas realistas a jardins selecionados.
 --  - Configura um plano rotativo de 4 etapas para demonstração.
---  - Cria trabalhos para HOJE (concluídos a verde, em progresso e por fazer).
+--  - Cria trabalhos para HOJE (concluídos a verde e agendados por fazer).
 --  - Adiciona materiais extra na carrinha e itens por faturar na execução.
 --  - Preenche a agenda para o resto da semana (amanhã e próximos dias).
 --  - Recalcula automaticamente os estados (OK, Urgente, Atrasado).
@@ -154,13 +154,13 @@ insert into manutencao_colaborador (manutencao_id, colaborador_id) values
 
 
 -- --- Carrinha 2: Toyota (Sábio & Miguel) ---
--- Manutenção 4: Em progresso agora mesmo (demonstra estado dinâmico)
+-- Manutenção 4: Agendada para hoje (primeiro trabalho da Toyota)
 insert into manutencao (id, jardim_id, veiculo_id, data, status, observacoes_planeamento) values
   ('d1000004-0000-0000-0000-000000000004',
    '63b19ce3-f7fb-418f-b687-6fbffc74200c', -- Sr. João Suiço (Plano rotativo)
    'f277dcba-7e34-43f7-bee3-78a1d57c1026', -- Toyota
    current_date,
-   'em_progresso',
+   'agendada',
    'Executar Etapa 2 do plano rotativo: Poda de sebes e arbustos altos.');
 
 insert into manutencao_colaborador (manutencao_id, colaborador_id) values
@@ -241,7 +241,7 @@ insert into manutencao (id, jardim_id, veiculo_id, data, status, observacoes_pla
    'Serviço atrasado — prioridade da manhã.'),
 
   ('d1000011-0000-0000-0000-000000000011',
-   '7e9b9682-1a8d-409b-be4c-77ca4a69d1d8', -- Moinho
+   '2b4dd9d2-c816-486f-be8d-2e6004e7a30f', -- Moinho
    'f277dcba-7e34-43f7-bee3-78a1d57c1026', -- Toyota
    current_date + interval '1 day',
    'agendada',
