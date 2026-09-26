@@ -101,6 +101,7 @@ Mockups (Claude Artifact): https://claude.ai/code/artifact/32ecf1c9-970c-4d89-a8
 6. [x] ~~**Planeamento & Execução com Kits e Materiais Extra** (Passo 4 Parte B): visualização dos kits associados no agendamento e lista de materiais extra (`manutencao_material_extra`).~~ *(Concluído)*
 7. **Apertar a RLS e Vistas por perfil** (trabalhador só vê/edita o que lhe toca no dia).
 8. **Chatbot / Assistente IA (posterior)**: perguntas em linguagem natural sobre faturação, histórico e geração do relatório diário.
+9. **PWA & Notificações Push**: transformar em Progressive Web App instalável (Android/iOS) e suporte a notificações push operacionais (detalhado em `docs/plano_pwa_notificacoes.md`).
 
 ## 8. Decisões já tomadas (não voltar a discutir sem motivo)
 
