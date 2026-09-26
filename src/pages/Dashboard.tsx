@@ -3,8 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { useAsync } from '../lib/useAsync'
 import { getDashboard, type CargaCarrinhaDia } from '../data/queries'
-import { Badge, Card, PageState, StatusDot } from '../components/ui'
-import { dataCurta, diasAte } from '../lib/format'
+import { Badge, Card, PageState } from '../components/ui'
 
 function Stat({ k, v, sub }: { k: string; v: string | number; sub?: string }) {
   return (
@@ -311,12 +310,11 @@ export default function Dashboard() {
       <PageState loading={loading} error={error}>
         {data && (
           <>
-            <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
               <Stat k="Jardins ativos" v={data.jardinsAtivos} />
               <Stat k="Atrasadas" v={data.atrasadas} />
               <Stat k="Por faturar" v={data.materiaisPorFaturar} sub="itens" />
               <Stat k="Trabalhos hoje" v={data.trabalhosHoje.length} />
-              <Stat k="Próximas" v={data.proximas.length} />
             </div>
 
             {/* Painel de Carga & Equipamento de Hoje (Verificação Matinal) */}
@@ -325,82 +323,44 @@ export default function Dashboard() {
               colaborador={colaborador}
             />
 
-            <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
-              <Card
-                title="Próximas manutenções"
-                action={
-                  <Link to="/planeamento" className="text-[12px] text-muted hover:text-ink">
-                    Ver planeamento
-                  </Link>
-                }
-              >
-                {data.proximas.length === 0 && (
-                  <div className="p-6 text-center text-sm text-muted">
-                    Sem jardins.
-                  </div>
-                )}
-                {data.proximas.map((j) => {
-                  const d = diasAte(j.proxima_manutencao)
-                  return (
-                    <Link
-                      key={j.id}
-                      to={`/jardim/${j.id}`}
-                      className="flex items-center gap-3 border-b border-line-soft px-4 py-3 text-[13px] last:border-0 hover:bg-page/60 transition-colors"
-                    >
-                      <StatusDot estado={j.status} />
-                      <div className="min-w-0 flex-1">
-                        <div className="font-medium text-ink">
-                          {j.cliente?.nome ?? 'Cliente'}
-                        </div>
-                        <div className="text-[11.5px] text-muted">
-                          {j.volta?.nome ?? 'Sem volta'}
-                        </div>
-                      </div>
-                      <span className="whitespace-nowrap font-mono text-[11.5px] text-muted">
-                        {dataCurta(j.proxima_manutencao)}
-                        {d != null && d < 0 ? ` · ${-d}d atraso` : ''}
-                      </span>
-                    </Link>
-                  )
-                })}
-              </Card>
-
-              <Card title="Trabalhos de hoje">
-                {data.trabalhosHoje.length === 0 && (
-                  <div className="p-6 text-center text-sm text-muted">
-                    Nada agendado para hoje.
-                  </div>
-                )}
-                {data.trabalhosHoje.map((m) => (
-                  <Link
-                    key={m.id}
-                    to={`/execucao/${m.id}`}
-                    className="flex items-center justify-between border-b border-line-soft px-4 py-3 text-[13px] last:border-0 hover:bg-page/60 transition-colors"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <div className="font-medium text-ink">
-                        {m.jardim?.cliente?.nome ?? 'Jardim'}
-                      </div>
-                      <div className="text-[11.5px] text-muted">
-                        {m.status === 'concluida'
-                          ? '✓ Concluído'
-                          : 'Toca para registar execução'}
-                      </div>
+            <Card
+              title="Trabalhos de hoje"
+              action={
+                <Link to="/planeamento" className="text-[12px] text-muted hover:text-ink">
+                  Ver planeamento completo →
+                </Link>
+              }
+            >
+              {data.trabalhosHoje.length === 0 && (
+                <div className="p-6 text-center text-sm text-muted">
+                  Nada agendado para hoje.
+                </div>
+              )}
+              {data.trabalhosHoje.map((m) => (
+                <Link
+                  key={m.id}
+                  to={`/execucao/${m.id}`}
+                  className="flex items-center justify-between border-b border-line-soft px-4 py-3 text-[13px] last:border-0 hover:bg-page/60 transition-colors"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="font-medium text-ink">
+                      {m.jardim?.cliente?.nome ?? 'Jardim'}
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge dark={m.status === 'em_progresso'}>
-                        {m.status === 'concluida'
-                          ? 'Concluída'
-                          : m.status === 'em_progresso'
-                            ? 'Em curso'
-                            : 'Agendada'}
-                      </Badge>
-                      <span className="text-xs text-muted">›</span>
+                    <div className="text-[11.5px] text-muted">
+                      {m.status === 'concluida'
+                        ? '✓ Concluído'
+                        : 'Toca para registar execução'}
                     </div>
-                  </Link>
-                ))}
-              </Card>
-            </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge>
+                      {m.status === 'concluida' ? 'Concluída' : 'Agendada'}
+                    </Badge>
+                    <span className="text-xs text-muted">›</span>
+                  </div>
+                </Link>
+              ))}
+            </Card>
           </>
         )}
       </PageState>
